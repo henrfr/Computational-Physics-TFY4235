@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from numba import njit
+from numba import njit, prange
+import time
+from scipy.signal import savgol_filter
+from plot_params import set_plot_parameters
 
-# TODO: Some statistical testing for the time dependent error for the decay rate.
-
+@njit(cache=True)
 def analytical_decay(LAMBDA: float, N0: int, t: np.ndarray) -> np.ndarray:
     """
     Returns the analytical solution for the nuclear decay rate.
@@ -22,7 +24,7 @@ def analytical_decay(LAMBDA: float, N0: int, t: np.ndarray) -> np.ndarray:
     np.ndarray : The number of particles of type N0 at each specified time.
     """
     return N0*np.exp(-LAMBDA*t)
-
+@njit(cache=True)
 def analytical_decay_3_step(LAMBDA1: float, LAMBDA2: float, N0: int, t: np.ndarray) -> np.ndarray:
     """
     Returns the analytical solution for the nuclear decay rate for a chain of
@@ -191,17 +193,18 @@ def simulate_decay_3_step(N0: int, t_max: float, delta_t: float, LAMBDA1: float,
     return N0_history, N1_history
 
 def test_decay():
-    LAMBDA = 0.035
+    """
+    Simulates and compares a 3-step nuclear decay chain with the analytical solution.
+    """
+    LAMBDA = 0.03
     N0 = 30000
     t_max = 100
     delta_t = 0.01
     LAMBDA2 = 20*LAMBDA # 5 can be good
 
-    #N1, N2 = simulate_decay(N0, t_max, delta_t, LAMBDA)
     N1, N2 = simulate_decay_3_step(N0, t_max, delta_t, LAMBDA, LAMBDA2)
-    t = np.linspace(0,t_max,1000)
+    t = np.linspace(0,t_max,len(N1))
     t_N1 = np.linspace(0, t_max,len(N1))
-    #plt.plot(t, analytical_decay(LAMBDA, N0, t), label="Analytical")
     parent, child = analytical_decay_3_step(LAMBDA, LAMBDA2, N0, t)
     plt.plot(t, parent, label="Analytical (Parent)")
     plt.plot(t, child, label="Analytical (Child)")
@@ -212,4 +215,60 @@ def test_decay():
     plt.legend()
     plt.savefig("../plots/decay.png")
     plt.show()
-test_decay()
+
+@njit(cache=True, parallel=True)
+def aggregate_statistics():
+    """
+    Simulates N distinct deacys of N0 particles and returns the error
+    """
+    N = 2000
+    LAMBDA = 0.03
+    N0 = 1000
+    t_max = 150
+    delta_t = 0.005
+    N1 = np.empty((N, int(t_max/delta_t)))
+    error_N1 = np.empty((N, int(t_max/delta_t)))
+
+    for i in prange(N):
+        N_1 = simulate_decay(N0, t_max, delta_t, LAMBDA)
+        N1[i] = N_1
+    t = np.linspace(0,t_max,len(N1[0]))
+    parent = analytical_decay(LAMBDA, N0, t)
+    for row in prange(len(N1)):
+        error_N1[row] = N1[row] - parent
+    return N1, error_N1, parent
+
+def display_statistics():
+    start = time.time()
+    N1, error_N1, parent = aggregate_statistics()
+
+    # Get total mean error and mean relative error
+    error_N1 = np.mean(error_N1, axis=0)
+    error_N1_relative = error_N1/parent
+
+    print(f"Time spent: {time.time()-start} seconds.")
+    t_max = 150
+    t = np.linspace(0,t_max,len(N1[0]))
+
+    # Plotting
+    fig, axs = plt.subplots(1,3,figsize=(14,5))
+    axs[0].plot(t, error_N1, label="Absolute error")
+    axs[0].set_xlabel("Time (s)")
+    axs[0].set_ylabel("Error in number of particles")
+    axs[1].plot(t, error_N1_relative, label="Relative error")
+    axs[1].set_xlabel("Time (s)")
+    axs[1].set_ylabel("Relative error (%)")
+    axs[1].legend()
+    axs[2].plot(t, parent, label="Analytical solution")
+    axs[2].set_xlabel("Time (s)")
+    axs[2].set_ylabel("Number of particles")
+    axs[0].legend()
+    axs[2].legend()
+    plt.tight_layout()
+    plt.savefig("../plots/stats.png", dpi=300)
+    plt.show()
+
+if __name__ == "__main__":
+    set_plot_parameters()
+    display_statistics()
+    test_decay()
