@@ -6,6 +6,7 @@ def set_plot_parameters(size: int=16) -> None:
     """
     plt.style.use('seaborn-bright')
     plt.rcParams['mathtext.fontset'] = 'cm'
+    plt.rc('legend',fontsize=size)
     font = {'family' : 'serif', 
             'size': size}
     plt.rc('font', **font)
