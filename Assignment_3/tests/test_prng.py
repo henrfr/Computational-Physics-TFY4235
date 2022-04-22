@@ -1,69 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
+import os
 
-def set_plot_parameters(size: int=16) -> None:
-    """
-    A helper function for setting plot parameters.
-    """
-    plt.style.use('seaborn-bright')
-    plt.rcParams['mathtext.fontset'] = 'cm'
-    font = {'family' : 'serif', 
-            'size': size}
-    plt.rc('font', **font)
-    plt.rc('lines', lw=2)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(SCRIPT_DIR))
+from src.prng import middle_square, linear_congruential_generator
+from src.plot_params import set_plot_parameters
 
-def middle_square(seed: int, N: int) -> np.ndarray:
-    """
-    This method uses the middle square method to generate random numbers.
-    The seed must be 4 digits long. It will inevitably repeat itself after
-    10**4 + 1 numbers (probably quicker). Never use it!
-    Parameters
-    ----------------------------------------------
-    seed : int
-        A 4-digit number to start of the sequence.
-    N : int
-        The number of random numbers generated
-    
-    Returns
-    ----------------------------------------------
-    np.ndarray : An array with N random numbers
-    """
-    rnd = np.empty(N) # Initialize array of size N
-    rnd[0] = seed
-    for i in range(1,N):
-        prev = rnd[i-1]
-        rnd[i] = int(str(int((prev**2))).zfill(8)[2:6]) # Keeps the center four digits
-    return rnd
-
-def linear_congruential_generator(modulus: int, a: int, c: int, seed: int, N: int) -> np.ndarray:
-    """
-    This method linear congruential generator to generate random numbers.
-    It can perform alright for good parameters, but really bad for others.
-    It is still not a very random method.
-    Parameters
-    ----------------------------------------------
-    seed : int
-        A number to start of the sequence
-    modulus, a, c : int
-        Mathematical constants used in the algorithm
-    N : int
-        The number of random numbers generated
-    
-    Returns
-    ----------------------------------------------
-    np.ndarray : An array with N random numbers
-    """
-    rnd = np.empty(N)
-    rnd[0] = seed
-    for i in range(1,N):
-        rnd[i] = (a*rnd[i-1]+c) % modulus
-    return rnd
-
-def test_middle_square():
+def test_middle_square(save=False):
     """
     Tests two seeds for the middle square method and plots them.
     Should return a plot where the sequence dies off and a plot
-    where the sequence repeats.
+    where the sequence repeats. Does not save the figure by default.
     """
 
     # Initialize parameters
@@ -93,16 +42,16 @@ def test_middle_square():
     axs[1].matshow(rnd)
     axs[1].set_title(f"Seed: {seed}")
     fig.tight_layout()
-    fig.savefig("../plots/middle_square.png", dpi=300)
+    if save:
+        fig.savefig("../plots/middle_square.png", dpi=300)
     plt.show()
-# set_plot_parameters()
-# test_middle_square()
 
-def test_linear_congruential_generator():
+def test_linear_congruential_generator(save=False):
     """
     Tests two sets of parameters for the linear congruential method.
     It should return one 2D plot of seemingly random noise, one ordered
-    3D plot and one seemingly unordered 3D plot.
+    3D plot and one seemingly unordered 3D plot.Does not save the figure 
+    by default.
     """
     # RANDU parameters
     modulus = 2**31
@@ -119,7 +68,8 @@ def test_linear_congruential_generator():
     plt.matshow(rnd) # 2D
     plt.title(f"{N_grid**2} numbers (RANDU)")
     plt.tight_layout()
-    plt.savefig("../plots/RANDU_2D.png", dpi=300)
+    if save:
+        plt.savefig("../plots/RANDU_2D.png", dpi=300)
     plt.show()
 
     # Plots the sequence in 3D
@@ -132,7 +82,8 @@ def test_linear_congruential_generator():
     ax.scatter(rnd[:-2],rnd[1:-1], rnd[2:], marker='o')
     plt.title(f"{N_grid**2} numbers (RANDU)")
     plt.tight_layout()
-    plt.savefig("../plots/RANDU_3D.png", dpi=300)
+    if save:
+        plt.savefig("../plots/RANDU_3D.png", dpi=300)
     plt.show()
 
     # Numerical recipes parameters
@@ -151,7 +102,8 @@ def test_linear_congruential_generator():
     ax.scatter(rnd[:-2],rnd[1:-1], rnd[2:], marker='o')
     plt.title(f"{N_grid**2} numbers (Numerical Recipes)")
     plt.tight_layout()
-    plt.savefig("../plots/NR_3D.png", dpi=300)
+    if save:
+        plt.savefig("../plots/NR_3D.png", dpi=300)
     plt.show()
 
 if __name__ == "__main__":    
