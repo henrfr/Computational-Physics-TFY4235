@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from equations import normalize, F
-from solve_ode import heun, evolve_spins_old_but_working
+from solve_ode import heun, evolve_spins_old_but_working, evolve_spins
 
 # def evolve_spins(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
 #     # For each time step
@@ -56,7 +56,7 @@ def task_b():
     # Initialize first state
     data[0][1][1] = normalize(np.array([1,0,2]))
 
-    data = evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z,
+    data = evolve_spins(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma)
     t = np.arange(data.shape[0])
 
@@ -65,7 +65,7 @@ def task_b():
     def f(x, omega, tau_inv):
         return data[0,1,1,0]*np.cos(omega*x)*np.exp(-tau_inv*x)
 
-    popt, pcov = curve_fit(f, t, x)
+    popt, pcov = curve_fit(f, t, x,bounds=(0,np.inf))
     print(popt)
     print(f"1/alpha is: {1/alpha:.2f}")
     print(f"omega*tau is: {popt[0]/popt[1]}")

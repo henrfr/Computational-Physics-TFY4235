@@ -2,7 +2,7 @@ from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
 import numpy as np
 from equations import normalize, F
-from solve_ode import heun, evolve_spins_old_but_working
+from solve_ode import heun, evolve_spins_old_but_working, evolve_spins
 import time
 
 # def evolve_spins(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
@@ -57,9 +57,10 @@ def task_a():
 
     print("Start")
     start = time.time()
-    data = evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z,
+    data = evolve_spins(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma)
     print(f"End: {time.time() -start:.2f} seconds.")
+    print(data.shape[0])
     t = np.arange(data.shape[0])
 
     x = data[:,1,1,0]

@@ -100,7 +100,7 @@ def task_g():
 
     # Initialize all states on a square lattice to the z direction 
     data[0,:,:,2] = 1
-    print(data[0])
+    #print(data[0])
 
     data = evolve_spins_old_but_working_pbc_square(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma, shape=(N_particles_x,N_particles_y))
@@ -108,21 +108,20 @@ def task_g():
 
     set_plot_parameters()
 
-    fig, axs = plt.subplots(1,3, sharey=True)
-    all_x = data[-1,:,:,0]
-    all_y = data[-1,:,:,1]
-    all_z = data[-1,:,:,2]
+    # fig, axs = plt.subplots(1,3, sharey=True)
+    # all_x = data[-1,:,:,0]
+    # all_y = data[-1,:,:,1]
+    # all_z = data[-1,:,:,2]
 
-    print(all_z)
+    # #print(all_z)
 
-    axs[0].imshow(all_x, aspect="auto")
-    axs[1].imshow(all_y, aspect="auto")
-    axs[2].imshow(all_z, aspect="auto", norm=plc.Normalize(-1, 1))
-    plt.show()
+    # axs[0].imshow(all_x, aspect="auto")
+    # axs[1].imshow(all_y, aspect="auto")
+    # axs[2].imshow(all_z, aspect="auto", norm=plc.Normalize(-1, 1))
+    # plt.show()
 
-    # x = data[:,:,0,0]
-    # #plt.plot(t, x, label=r"$S_x$")
-    # #plt.plot(t, data[:,:,0,1], label=r"$S_y$")
+    #plt.plot(t, x, label=r"$S_x$")
+    #plt.plot(t, data[:,:,0,1], label=r"$S_y$")
     # plt.plot(t, data[:,:,0,2], label=r"$S_z$")
     # plt.plot(t, data[:,0,:,2], label=r"$S_z$")
     # plt.legend()
@@ -179,9 +178,9 @@ def test_random_spins():
     plt.show()
 
 #test_random_spins()
-start = time.time()
-task_g_assert_same_as_f()
-print(f"Task g_assert) took {time.time()-start:.2f} seconds.")
 # start = time.time()
-# task_g()
-# print(f"Task g) took {time.time()-start:.2f} seconds.")
+# task_g_assert_same_as_f()
+# print(f"Task g_assert) took {time.time()-start:.2f} seconds.")
+start = time.time()
+task_g()
+print(f"Task g) took {time.time()-start:.2f} seconds.")

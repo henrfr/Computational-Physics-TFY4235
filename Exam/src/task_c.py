@@ -23,7 +23,7 @@ def task_c():
     #J = 0 If J is 0, no spin will be transmitted
 
 
-    N = 10000
+    N = 40000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
     N_particles_x = 10
@@ -43,7 +43,7 @@ def task_c():
     data[0][1][1] = normalize(np.array([1,0,4]))
 
 
-    data = evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z,
+    data = evolve_spins(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma, shape=(N_particles_x,N_particles_y))
     t = np.arange(data.shape[0])
 
