@@ -2,7 +2,7 @@ from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
 from solve_ode import evolve_spins, evolve_spins_old_but_working_pbc_linear
 import numpy as np
-from equations import normalize, make_random_spins
+from equations import normalize, make_random_spins_linear
 import time
 
 """
@@ -23,16 +23,16 @@ def task_f():
     alpha = 0.1 # 0.05
     T = 0
     B = np.array([0,0,B_0])
-    B = np.array([0,0,0])
+    #B = np.array([0,0,0])
     e_z = np.array([0,0,1])
-    #d_z = 0 # Will only plot with one effect
+    d_z = 0 # Will only plot with one effect
     #J = 0 If J is 0, no spin will be transmitted
 
 
     N = 300000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 50
+    N_particles_x = 20
     N_particles_y = 1
     N_spin_components = 3
 
@@ -40,8 +40,8 @@ def task_f():
     data = np.zeros(shape=(N_steps, N_particles_x, N_particles_y, N_spin_components))
 
     # Initialize all states on a line 
-    data[0,:,0] = make_random_spins(N_particles_x)
-    print(data[0])
+    data[0,:,0] = make_random_spins_linear(N_particles_x)
+    #print(data[0])
 
     data = evolve_spins_old_but_working_pbc_linear(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma, shape=(N_particles_x,N_particles_y))

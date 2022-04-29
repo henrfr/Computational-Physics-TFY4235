@@ -15,7 +15,7 @@ Antiferromagnetic will make spins opposing each other in Z. Just tune, J, B and 
 
 def task_g_assert_same_as_f():
     gamma = 0.176 # 1.76*10**-1 T^-1 ps^-1 # /(T* ps)
-    J = 1 # meV
+    J = -1 # meV
     d_z = 0.1 # meV
     mu = 0.05788 # 5.788*10**-2 # meV*T^-1 # meV/T
     B_0 = 1.72 # T
@@ -23,18 +23,18 @@ def task_g_assert_same_as_f():
     k_b = 0.08617 # 8.617*10**-2 # meV K^-1 # meV/K
     alpha = 0.2 # 0.05
     T = 0
-    B = np.array([0,0,B_0])
-    #B = np.array([0,0,0])
+    #B = np.array([0,0,B_0])
+    B = np.array([0,0,0])
     e_z = np.array([0,0,1])
-    d_z = 0 # Will only plot with one effect
+    #d_z = 0 # Will only plot with one effect
     #J = 0 If J is 0, no spin will be transmitted
 
 
     N = 30000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 4
-    N_particles_y = 4
+    N_particles_x = 12
+    N_particles_y = 12
     N_spin_components = 3
 
     # Initializes without padding padding
@@ -88,11 +88,11 @@ def task_g():
     #J = 0 If J is 0, no spin will be transmitted
 
 
-    N = 60000
+    N = 30000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 6
-    N_particles_y = 6
+    N_particles_x = 10
+    N_particles_y = 10
     N_spin_components = 3
 
     # Initializes without padding
@@ -179,9 +179,9 @@ def test_random_spins():
     plt.show()
 
 #test_random_spins()
-#start = time.time()
-#task_g_assert_same_as_f()
-#print(f"Task g_assert) took {time.time()-start:.2f} seconds.")
 start = time.time()
-task_g()
-print(f"Task g) took {time.time()-start:.2f} seconds.")
+task_g_assert_same_as_f()
+print(f"Task g_assert) took {time.time()-start:.2f} seconds.")
+# start = time.time()
+# task_g()
+# print(f"Task g) took {time.time()-start:.2f} seconds.")

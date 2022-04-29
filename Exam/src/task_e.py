@@ -27,10 +27,10 @@ def task_e():
     #J = 0 If J is 0, no spin will be transmitted
 
 
-    N = 20000
+    N = 5000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 30
+    N_particles_x = 10
     N_particles_y = 1
     N_spin_components = 3
 

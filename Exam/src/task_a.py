@@ -2,7 +2,8 @@ from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
 import numpy as np
 from equations import normalize, F
-from solve_ode import heun, evolve_spins
+from solve_ode import heun, evolve_spins_old_but_working
+import time
 
 # def evolve_spins(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
 #     # For each time step
@@ -54,9 +55,11 @@ def task_a():
     # Initialize first state
     data[0][1][1] = normalize(np.array([1,0,2]))
 
-
-    data = evolve_spins(data, N_steps, delta_t, mu, d_z, e_z,
+    print("Start")
+    start = time.time()
+    data = evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma)
+    print(f"End: {time.time() -start:.2f} seconds.")
     t = np.arange(data.shape[0])
 
     x = data[:,1,1,0]

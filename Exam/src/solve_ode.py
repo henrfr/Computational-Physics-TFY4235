@@ -3,13 +3,13 @@ from equations import LLG, normalize, F
 from numba import njit, prange
 # Heun's Method
 
-@njit(cache=True)
+@njit()
 def heun(delta_t, S_j, F_j, gamma, alpha):
     # x is coordinates (as a vector)
     # h is timestep
     # f(x) is a function that returns the derivative
     # "Slopes"
-    # Vurdere om du må sende inn nye F_j verdier når du skal korrigere prediksjonen.
+    # TODO: Vurdere om du må sende inn nye F_j verdier når du skal korrigere prediksjonen.
     k1  = LLG(S_j,                F_j, gamma, alpha)
     k2  = LLG(S_j + k1*delta_t,   F_j, gamma, alpha)
     # Update time and position
@@ -166,13 +166,14 @@ def quasi_heun(data, i, shape, gamma, alpha, delta_t, F_j_, F_j_pred, S_j_pred):
             data[i+1][row_val][col_val] = S_j + (delta_t/2)*(LLG(S_j, F_j, gamma, alpha) + LLG(S_j_predicted,
             F_j_predicted, gamma, alpha))
 
-@njit(cache=True)
+#@njit(cache=True)
 def evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
     """
     This one is for non-periodic boundary conditions. It does not update the F_j for the prediction.
     """
     # For each time step
     for i in range(N_steps-1):
+        #print("First time step")
         # For every value in row
         for row_val in range(1,shape[0]+1):
             # For every value in column
@@ -200,17 +201,16 @@ def evolve_spins_old_but_working(data, N_steps, delta_t, mu, d_z, e_z, B, J, alp
                 data[i+1][row_val][col_val] = heun(delta_t, S_j, F_j, gamma, alpha)
     return data
 
-@njit(cache=True)
+@njit()
 def evolve_spins_old_but_working_pbc_linear(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
     """
-    This one is for non-periodic boundary conditions. It does not update the F_j for the prediction.
+    This one is for periodic boundary conditions. It does not update the F_j for the prediction.
     """
-    print(shape[0])
-    print(shape[1])
-    print(1%1)
     # For each time step
     for i in range(N_steps-1):
         # For every value in row
+        if i % 1000 == 0:
+            print(i)
         for row_val in range(shape[0]):
             # For every value in column
             for col_val in range(shape[1]):
@@ -219,13 +219,56 @@ def evolve_spins_old_but_working_pbc_linear(data, N_steps, delta_t, mu, d_z, e_z
 
                 # Find the neighbour spin values, since the data is padded, it generalizes to 0D/1D
                 neighbours = np.zeros((2,3))
-                row_val_end = row_val % shape[0]
-
-                neighbours[0] = data[i][row_val_end+1][col_val] # Right
+                #print(row_val)
+                #print(shape[0])
+                if row_val % (shape[0] - 1) == 0:
+                    neighbours[0] = data[i][0][col_val] # Right
+                else:
+                    neighbours[0] = data[i][row_val+1][col_val] # Right
                 neighbours[1] = data[i][row_val-1][col_val] # Left
-                if i in [0,1] and row_val in [0,1]:
-                    print(data[i][row_val][1])
-                    print(neighbours)
+
+                # Find the effective field at current position
+                F_j = F(mu, S_j,d_z,e_z,B,J,neighbours,alpha,k_b,T,gamma,delta_t)
+
+                # Perform a step with Heun
+                data[i+1][row_val][col_val] = heun(delta_t, S_j, F_j, gamma, alpha)
+    return data
+
+@njit()
+def evolve_spins_old_but_working_pbc_square(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
+    """
+    This one is for non-periodic boundary conditions. It does not update the F_j for the prediction.
+    """
+    # For each time step
+    print(shape[0])
+    for i in range(N_steps-1):
+        if i%10000 == 0:
+            print(i)
+        # For every value in row
+        for row_val in range(shape[0]):
+            # For every value in column
+            for col_val in range(shape[1]):
+                # Find current spin values
+                S_j = data[i][row_val][col_val]
+
+                # Find the neighbour spin values, since the data is padded, it generalizes to 0D/1D
+                neighbours = np.zeros((4,3))
+                row_val_end = row_val % shape[0]
+                col_val_end = col_val % shape[0]
+
+                if row_val % (shape[0] - 1) == 0:
+                    neighbours[2] = data[i][0][col_val] # Right
+                else:
+                    neighbours[2] = data[i][row_val+1][col_val] # Right
+                if col_val % (shape[0] - 1) == 0:
+                    neighbours[0] = data[i][0][col_val] # Down
+                else:
+                    neighbours[0] = data[i][row_val][col_val+1] # Down
+
+                #neighbours[0] = data[i][row_val_end][col_val_end + 1]  # Down
+                neighbours[1] = data[i][row_val][col_val - 1] # Left
+                #neighbours[2] = data[i][row_val_end+1][col_val] # Right
+                neighbours[3] = data[i][row_val-1][col_val] # Left
 
                 # Find the effective field at current position
                 F_j = F(mu, S_j,d_z,e_z,B,J,neighbours,alpha,k_b,T,gamma,delta_t)

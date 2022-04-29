@@ -23,10 +23,10 @@ def task_c():
     #J = 0 If J is 0, no spin will be transmitted
 
 
-    N = 20000
+    N = 10000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 30
+    N_particles_x = 10
     N_particles_y = 1
     N_spin_components = 3
 
@@ -49,7 +49,7 @@ def task_c():
 
     x = data[:,1,1,0]
 
-    set_plot_parameters()
+    #set_plot_parameters()
 
     # print(data[:,0,:,1])
     # data[:,0,:,1] = np.array([0,0,0])
@@ -65,10 +65,13 @@ def task_c():
     axs[2].imshow(all_z, aspect="auto")
     plt.show()
 
-    plt.plot(t, x, label=r"$S_x$")
-    plt.plot(t, data[:,1,1,1], label=r"$S_y$")
-    plt.plot(t, data[:,1,1,2], label=r"$S_z$")
-    plt.legend()
+    fig, axs = plt.subplots(1,3)
+    axs[0].plot(t, data[:,1:5,1,0], label=r"$S_x$")
+    axs[1].plot(t, data[:,1:5,1,1], label=r"$S_y$")
+    axs[2].plot(t, data[:,1:5,1,2], label=r"$S_z$")
+    axs[0].legend()
+    axs[1].legend()
+    axs[2].legend()
     plt.show()
 
 
