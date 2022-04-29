@@ -30,15 +30,16 @@ def task_h():
     #J = 0 If J is 0, no spin will be transmitted
 
 
-    N = 10000
+    N = 30000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 14
-    N_particles_y = 14
+    N_particles_x = 10
+    N_particles_y = 10
     N_spin_components = 3
 
     T_ = [1,10,20,30,40,50,55,60,65,70]
     M_t_ = np.zeros(len(T_))
+    M_t_std_ = np.zeros(len(T_))
     for l in range(len(T_)):
         # Initializes without padding
         data = np.zeros(shape=(N_steps, N_particles_x, N_particles_y, N_spin_components))
@@ -53,20 +54,20 @@ def task_h():
 
         set_plot_parameters()
 
-        fig, axs = plt.subplots(1,3, sharey=True)
-        all_x = data[-1,:,:,0]
-        all_y = data[-1,:,:,1]
-        all_z = data[-1,:,:,2]
+        # fig, axs = plt.subplots(1,3, sharey=True)
+        # all_x = data[-1,:,:,0]
+        # all_y = data[-1,:,:,1]
+        # all_z = data[-1,:,:,2]
 
-        print(all_z)
+        #print(all_z)
 
-        axs[0].imshow(all_x, aspect="auto")
-        axs[1].imshow(all_y, aspect="auto")
-        axs[2].imshow(all_z, aspect="auto", norm=plc.Normalize(-1, 1))
-        plt.show()
+        # axs[0].imshow(all_x, aspect="auto")
+        # axs[1].imshow(all_y, aspect="auto")
+        # axs[2].imshow(all_z, aspect="auto", norm=plc.Normalize(-1, 1))
+        # plt.show()
 
-        plt.plot(t, data[:,0,0,2])
-        plt.show()
+        # plt.plot(t, data[:,0,0,2])
+        # plt.show()
 
         M = np.zeros(data.shape[0])
         for i in range(len(M)):
@@ -82,21 +83,22 @@ def task_h():
         stable_point = 5000
 
         M_timeavg = get_timeavg_magnetization(M[stable_point:])
-        M_t_std = np.std(M[stable_point:])
+        M_t_std_[l] = np.std(M[stable_point:])
         M_t_[l] = M_timeavg
 
-        # M_timeavg = M_timeavg*np.ones_like(t)
-        # plt.plot(t, M, label=r"M(T,t)")
-        # plt.plot(t, M_timeavg, label=r"M(T)")
-        # plt.title(f"T = {T_[l]} K")
-        # plt.legend()
-        # plt.show()
+        M_timeavg = M_timeavg*np.ones_like(t)
+        plt.plot(t, M, label=r"M(T,t)")
+        plt.plot(t, M_timeavg, label=r"M(T)")
+        plt.title(f"T = {T_[l]} K")
+        plt.legend()
+        plt.show()
     plt.plot(T_, M_t_, label=r"$\langle$M(T,t)$\rangle_t$")
-    plt.errorbar(T_, M_t_, yerr = M_t_std,fmt='o',ecolor = 'red',color='yellow')
+    plt.errorbar(T_, M_t_, yerr = M_t_std_,fmt='o',ecolor = 'red',color='yellow')
     plt.title("Phase diagram")
     plt.legend()
     plt.xlabel("Temperature (K)")
     plt.ylabel("Magnetization")
+    plt.savefig("../plots/phase_diagram.png", dpi=300)
     plt.show()
 
 start = time.time()
