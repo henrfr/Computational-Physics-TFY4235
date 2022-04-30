@@ -31,7 +31,7 @@ def get_timeavg_magnetization(magnetization_: np.ndarray) -> float:
     """Finds the time_average of the magnetization.
 
     Args:
-        magnetization (np.ndarray): A 1D array of magnetizations
+        magnetization (np.ndarray): A 1D array of magnetizations over time
 
     Returns:
         float: The time averaged magnetization.
@@ -66,7 +66,7 @@ def make_thermal_constant(alpha: float, k_b: float, T: float, gamma: float, mu: 
         np.ndarray: An [x,y,z] array modelling the thermal contribution.
     """
     return np.sqrt((2*alpha*k_b*T)/(gamma*mu*delta_t))
-    
+
 @njit()
 def LLG(S_j: np.ndarray, F_j: np.ndarray, gamma: float, alpha: float) -> np.ndarray:
     """The Landau-Lifshitz-Gilbert equation describing the precessional motion of magnetization
