@@ -1,6 +1,8 @@
 import numpy as np # Use numpy to operate on arrays. numpy is written in C
 from numba import njit # Used for JIT-compilation
 
+# TODO: Find out which random function to use!!!!!!
+
 @njit()
 def normalize(spin_coords: np.ndarray) -> np.ndarray:
     """Normalizes the size of a vector.
@@ -122,7 +124,7 @@ def random_matrix(shape):
 def make_3D_gaussian():
     rnd_spin = np.zeros(3)
     theta = np.random.rand()*2*np.pi
-    phi = np.random.rand()*np.pi
+    phi = np.arccos(1 - 2 * np.random.rand())
 
     s_x = (np.sin(phi)*np.cos(theta))
     s_y = (np.sin(phi)*np.sin(theta))
@@ -142,7 +144,7 @@ def make_3D_gaussian_alt():
     rnd_spin[0] = np.random.normal()
     rnd_spin[1] = np.random.normal()
     rnd_spin[2] = np.random.normal()
-    return normalize(rnd_spin)
+    return rnd_spin
 
 @njit()
 def make_random_spins_linear(N):
@@ -150,7 +152,7 @@ def make_random_spins_linear(N):
 
     for i in range(N):
         theta = np.random.rand()*2*np.pi
-        phi = np.random.rand()*np.pi
+        phi = np.arccos(1 - 2 * np.random.rand())
 
         s_x = (np.sin(phi)*np.cos(theta))
         s_y = (np.sin(phi)*np.sin(theta))
@@ -159,14 +161,14 @@ def make_random_spins_linear(N):
         rnd_spins[i] = [s_x, s_y, s_z]
     return rnd_spins
 
-
+@njit()
 def make_random_spins_square(N_x, N_y):
     rnd_spins = np.zeros((N_x, N_y, 3))
 
     for i in range(N_x):
         for j in range(N_y):
             theta = np.random.rand()*2*np.pi
-            phi = np.random.rand()*np.pi
+            phi = np.arccos(1 - 2 * np.random.rand())
 
             s_x = (np.sin(phi)*np.cos(theta))
             s_y = (np.sin(phi)*np.sin(theta))
