@@ -1,6 +1,6 @@
 from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
-from solve_ode import evolve_spins, evolve_spins_old_but_working_pbc_linear
+from solve_ode import evolve_spins_pbc_linear, evolve_spins_pbc_linear_old
 import numpy as np
 from equations import normalize, make_random_spins_linear
 import time
@@ -14,7 +14,7 @@ Antiferromagnetic will make spins opposing each other in Z. Just tune, J, B and 
 
 def task_f():
     gamma = 0.176 # 1.76*10**-1 T^-1 ps^-1 # /(T* ps)
-    J = 1 # meV
+    J = -1 # meV
     d_z = 0.1 # meV
     mu = 0.05788 # 5.788*10**-2 # meV*T^-1 # meV/T
     B_0 = 1.72 # T
@@ -23,16 +23,16 @@ def task_f():
     alpha = 0.1 # 0.05
     T = 0
     B = np.array([0,0,B_0])
-    #B = np.array([0,0,0])
+    B = np.array([0,0,0])
     e_z = np.array([0,0,1])
-    d_z = 0 # Will only plot with one effect
+    #d_z = 0 # Will only plot with one effect
     #J = 0 If J is 0, no spin will be transmitted
 
 
     N = 100000
     sim_time = N*delta_t
     N_steps = int(sim_time/delta_t)
-    N_particles_x = 50
+    N_particles_x = 100
     N_particles_y = 1
     N_spin_components = 3
 
@@ -42,9 +42,10 @@ def task_f():
     # Initialize all states on a line 
     data[0,:,0] = make_random_spins_linear(N_particles_x)
     #print(data[0])
-
-    data = evolve_spins_old_but_working_pbc_linear(data, N_steps, delta_t, mu, d_z, e_z,
+    start = time.time()
+    data = evolve_spins_pbc_linear(data, N_steps, delta_t, mu, d_z, e_z,
             B, J, alpha, k_b, T, gamma, shape=(N_particles_x,N_particles_y))
+    print(f"Task f) took {time.time()-start:.2f} seconds.")
     t = np.arange(data.shape[0])
 
     set_plot_parameters()
@@ -72,6 +73,4 @@ def task_f():
 #     print(spins[0])
 
 #test_random_spins()
-start = time.time()
 task_f()
-print(f"Task f) took {time.time()-start:.2f} seconds.")
