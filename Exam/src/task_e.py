@@ -1,14 +1,9 @@
 from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
-#from single_spin import evolve_spins
 from solve_ode import evolve_spins_pbc_linear, evolve_spins_pbc_linear_old
 import numpy as np
 from equations import normalize
 import time
-
-
-"""
-Task e is now working 29.04 10:24"""
 
 def task_e():
     gamma = 0.176 # 1.76*10**-1 T^-1 ps^-1 # /(T* ps)
