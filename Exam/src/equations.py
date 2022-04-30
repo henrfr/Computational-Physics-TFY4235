@@ -1,8 +1,6 @@
 import numpy as np # Use numpy to operate on arrays. numpy is written in C
 from numba import njit # Used for JIT-compilation
 
-# TODO: Find out which random function to use!!!!!!
-
 @njit()
 def normalize(spin_coords: np.ndarray) -> np.ndarray:
     """Normalizes the size of a vector.
@@ -68,6 +66,7 @@ def make_thermal_constant(alpha: float, k_b: float, T: float, gamma: float, mu: 
         np.ndarray: An [x,y,z] array modelling the thermal contribution.
     """
     return np.sqrt((2*alpha*k_b*T)/(gamma*mu*delta_t))
+    
 @njit()
 def LLG(S_j: np.ndarray, F_j: np.ndarray, gamma: float, alpha: float) -> np.ndarray:
     """The Landau-Lifshitz-Gilbert equation describing the precessional motion of magnetization
@@ -113,33 +112,62 @@ def F(mu, S_j, d_z, e_z, B, J, neighbours, thermal_constant, rand_vec: np.ndarra
     return F_eff(mu, S_j, d_z, e_z, B, J, neighbours) + F_th(thermal_constant, rand_vec)
 
 @njit()
-def random_matrix(shape):
+def random_matrix(shape: tuple) -> np.ndarray:
+    """Generates a random matrix with the size of the 2D lattice, which 
+    random vectors are drawn from in the Heun schemes. It is repeated
+    for every iteration, but not in between Heun steps.
+
+    Args:
+        shape (tuple): The shape of the lattice (N_x, N_y)
+
+    Returns:
+        np.ndarray: A matrix with gaussian distributed 3D vectors [N_x, N_y, 3]
+    """
     rand_mat = np.empty(shape=(shape[0], shape[1], 3))
     for i in range(shape[0]):
         for j in range(shape[1]):
-            # rand_mat[i][j] = random method
+            # Choose the method to generate random vectors, make_3D_gaussian() or make_3D_gaussian_alt()
             rand_mat[i][j] = make_3D_gaussian()
     return rand_mat
+
 @njit()
-def make_3D_gaussian():
-    rnd_spin = np.zeros(3)
-    theta = np.random.rand()*2*np.pi
-    phi = np.arccos(1 - 2 * np.random.rand())
+def make_3D_gaussian() -> np.ndarray:
+    """Generates a 3D Gaussian distributed vector by first making
+    a random uniformly distrbuted direction and modulating it with
+    a number from a Gaussian distribution.
 
-    s_x = (np.sin(phi)*np.cos(theta))
-    s_y = (np.sin(phi)*np.sin(theta))
-    s_z = (np.cos(phi))  
+    Returns:
+        np.ndarray: A Gaussian distributed 3D vector [x,y,z]
+    """
+    rnd_spin = np.zeros(3) # Allocated memory
 
-    rnd_spin[0] = s_x
-    rnd_spin[1] = s_y
-    rnd_spin[2] = s_z
+    theta = np.random.rand()*2*np.pi # Draws theta
+    phi = np.arccos(1 - 2 * np.random.rand()) # Draws and transforms phi for a uniform distribution of directions.
 
-    rnd_spin = rnd_spin*np.sin(phi)*np.random.normal()
+    # Finds the components in each direction.
+    # Doing the maths, one see that the length of [x,y,z] is 1.
+    x = (np.sin(phi)*np.cos(theta))
+    y = (np.sin(phi)*np.sin(theta))
+    z = (np.cos(phi))  
+
+    rnd_spin[0] = x
+    rnd_spin[1] = y
+    rnd_spin[2] = z
+
+    # Modulating the unit direction with a gaussian distributed number.
+    rnd_spin = rnd_spin*np.random.normal()
 
     return rnd_spin
 
 @njit()
-def make_3D_gaussian_alt():
+def make_3D_gaussian_alt() -> np.ndarray:
+    """Generates a gaussian distributed vector by allocating a gaussian
+    distributed number to each direction. It is an alternative to
+    make_3D_gaussian()
+
+    Returns:
+        np.ndarray: A random vector [x,y,z]
+    """
     rnd_spin = np.zeros(3)
     rnd_spin[0] = np.random.normal()
     rnd_spin[1] = np.random.normal()
@@ -147,7 +175,16 @@ def make_3D_gaussian_alt():
     return rnd_spin
 
 @njit()
-def make_random_spins_linear(N):
+def make_random_spins_linear(N: int) -> np.ndarray:
+    """Makes a linear array of random directions of unit length
+    using the make_3D_gaussian() approach.
+
+    Args:
+        N (int): The length of the line segment
+
+    Returns:
+        np.ndarray: N random vectors of 3 components [N,3]
+    """
     rnd_spins = np.zeros((N, 3))
 
     for i in range(N):
@@ -162,7 +199,16 @@ def make_random_spins_linear(N):
     return rnd_spins
 
 @njit()
-def make_random_spins_square(N_x, N_y):
+def make_random_spins_square(N_x: int, N_y: int) -> np.ndarray:
+    """Makes a 2D ndarray of random directions of unit length
+    using the make_3D_gaussian() approach.
+    Args:
+        N_x (int): Number of spins in x-direction
+        N_y (int): Number of spins in y-direction
+
+    Returns:
+        np.ndarray: N_x*N_y random vectors of 3 components, [N_x, N_y, 3]
+    """
     rnd_spins = np.zeros((N_x, N_y, 3))
 
     for i in range(N_x):
@@ -176,13 +222,3 @@ def make_random_spins_square(N_x, N_y):
 
             rnd_spins[i][j] = [s_x, s_y, s_z]
     return rnd_spins
-
-def test():
-    # (x, y, S)
-    a = np.zeros((3,3,3))
-    a[1][1][2] = 1
-    print(a)
-    print(a[0][0])
-# test()
-
-# print(normalize(np.array([1,1,100])))
