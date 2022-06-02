@@ -6,12 +6,12 @@ from equations import normalize
 from solve_ode import evolve_spins_old, evolve_spins
 
 def task_b():
-    gamma = 0.176 # 1.76*10**-1 T^-1 ps^-1 # /(T* ps)
+    gamma = 0.176 # 1/(T* ps)
     d_z = 0.1 # meV
-    mu = 0.05788 # 5.788*10**-2 # meV*T^-1 # meV/T
+    mu = 0.05788 # meV/T
     B_0 = 1.72 # T
-    delta_t = 0.001 # 1*10**-3 # ps
-    k_b = 0.08617 # 8.617*10**-2 # meV K^-1 # meV/K
+    delta_t = 0.001 # ps
+    k_b = 0.08617 #  meV/K
     alpha = 0.05 # Sligthly damped
     T = 0 # K
     B = np.array([0,0,B_0])
@@ -71,7 +71,7 @@ def task_b():
     axs[0].set_xlabel("Time (ps)")
     axs[1].set_xlabel("Time (ps)")
     fig.tight_layout()
-    fig.savefig("../plots/task_b.png", dpi=300)
+    #fig.savefig("../plots/task_b.png", dpi=300)
     plt.show()
 
 def compare_a_and_b():
@@ -183,7 +183,7 @@ def compare_a_and_b():
     ax1.set_box_aspect((1,1,1))
     ax1.set_axis_off()
     fig.tight_layout()
-    fig.savefig("../plots/task_b2.png", dpi=300)
+    #fig.savefig("../plots/task_b2.png", dpi=300)
     plt.show()
 
 if __name__ == "__main__":

@@ -1,26 +1,20 @@
 from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
-from solve_ode import evolve_spins, evolve_spins_pbc_square_old
+from solve_ode import evolve_spins_pbc_square
 import numpy as np
-from equations import normalize, make_random_spins_square, get_magnetization, get_timeavg_magnetization
+from equations import get_magnetization, get_timeavg_magnetization
 import time
-import matplotlib.colors as plc
 
-"""
-This works and will find the ground state for both ferromagnetic and antiferromagnetic
-Ferromagnetic will make boundaries that make collapse when there is no B-field.
-Ferromagnetic will orient upwards when there is B-field
-Antiferromagnetic will make spins opposing each other in Z. Just tune, J, B and d_z to see this.
-"""
+"""The main bulk of h is done in i)"""
 
 def task_h():
-    gamma = 0.176 # 1.76*10**-1 T^-1 ps^-1 # /(T* ps)
+    gamma = 0.176 # 1/(T* ps)
     J = 1 # meV
     d_z = 0.1 # meV
-    mu = 0.05788 # 5.788*10**-2 # meV*T^-1 # meV/T
+    mu = 0.05788 #  meV/T
     B_0 = 1.72 # T
-    delta_t = 0.001 # 1*10**-3 # ps
-    k_b = 0.08617 # 8.617*10**-2 # meV K^-1 # meV/K
+    delta_t = 0.001 # ps
+    k_b = 0.08617 #  meV/K
     alpha = 0.5 # 0.05
     #T = 1
     B = np.array([0,0,B_0])
@@ -48,7 +42,7 @@ def task_h():
         data[0,:,:,2] = 1
         #print(data[0])
 
-        data = evolve_spins_pbc_square_old(data, N_steps, delta_t, mu, d_z, e_z,
+        data = evolve_spins_pbc_square(data, N_steps, delta_t, mu, d_z, e_z,
                 B, J, alpha, k_b, T_[l], gamma, shape=(N_particles_x,N_particles_y))
         t = np.arange(data.shape[0])
 
