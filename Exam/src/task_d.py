@@ -46,52 +46,65 @@ def task_c():
             B, J, alpha, k_b, T, gamma, shape=(N_particles_x,N_particles_y))
     t = np.arange(data.shape[0])*delta_t
 
+    # Plotting
     set_plot_parameters()
     fig, axs = plt.subplots(1,3, sharey=True, figsize=(14,4))
     all_x = data[:,1:N_particles_x+1,1,0]
     all_y = data[:,1:N_particles_x+1,1,1]
     all_z = data[:,1:N_particles_x+1,1,2]
 
-    im0 = axs[0].imshow(all_x, aspect="auto")
+    im0 = axs[0].imshow(all_x, aspect="auto", interpolation="none")
     axs[0].set_title(r"$S_x$")
     axs[0].set_xlabel("Spin number")
     axs[0].set_ylabel("Time (fs)")
-    im1 = axs[1].imshow(all_y, aspect="auto")
+    im1 = axs[1].imshow(all_y, aspect="auto", interpolation="none")
     axs[1].set_title(r"$S_y$")
     axs[1].set_xlabel("Spin number")
-    im2 = axs[2].imshow(all_z, aspect="auto")
+    axs[1].set_ylabel("Time (fs)")
+    im2 = axs[2].imshow(all_z, aspect="auto", interpolation="none")
     axs[2].set_title(r"$S_z$")
     axs[2].set_xlabel("Spin number")
+    axs[2].set_ylabel("Time (fs)")
     plt.colorbar(im0,ax = axs[0])
     plt.colorbar(im1,ax = axs[1])
     plt.colorbar(im2,ax = axs[2])
     fig.tight_layout()
-    fig.savefig("../plots/task_dimshow.png", dpi=300)
+    #fig.savefig("../plots/task_dimshow.png", dpi=300)
     plt.show()
 
-    fig, axs = plt.subplots(1,1)
-    axs.plot(t, data[:,1:4,1,0], label=r"$S_x$")
-    axs.set_xlabel("Time (ps)")
-    axs.set_ylabel("Spin value")
-    #axs[1].plot(t, data[:,1:5,1,1], label=r"$S_y$")
-    #axs[2].plot(t, data[:,1:5,1,2], label=r"$S_z$")
+    fig = plt.figure(figsize=(12,6))
+    axs1 = fig.add_subplot(121)
+    axs1.plot(t, data[:,1,1,0], label=r"$S_1$")
+    axs1.plot(t, data[:,2,1,0], label=r"$S_2$")
+    axs1.plot(t, data[:,3,1,0], label=r"$S_3$")
+    axs1.set_xlabel("Time (ps)")
+    axs1.set_ylabel(r"Spin value ($S_x$)")
+    axs1.legend()
+
+    axs = fig.add_subplot(122)
+    
+    axs.plot(data[3500:5000,1,1,0], data[3500:5000,1,1,1], label=r"$S_1$")
+    axs.plot(data[3500:5000,2,1,0], data[3500:5000,2,1,1], label=r"$S_2$")
+    axs.plot(data[3500:5000,3,1,0], data[3500:5000,3,1,1], label=r"$S_3$")
+    axs.set_xlabel(r"$S_x$")
+    axs.set_ylabel(r"$S_y$")
     axs.legend()
-    #axs[1].legend()
-    #axs[2].legend()
+
     fig.tight_layout()
-    fig.savefig("../plots/task_dplot.png", dpi=300)
+    #fig.savefig("../plots/task_ddouble.png", dpi=300)
     plt.show()
 
     from matplotlib import animation
 
-    X, Y = np.mgrid[:4:5j,:1:1j]
-    U = data[0,1:6,1:2,0]
-    V = data[0,1:6,1:2,1]
+    X, Y = np.mgrid[:19:20j,:1:1j]
+    U = data[0,1:21,1:2,0]
+    V = data[0,1:21,1:2,1]
+
 
     fig, ax = plt.subplots(1,1)
-    Q = ax.quiver(X, Y, U, V, pivot='mid', color='r', units='inches')
+    Q = ax.quiver(X, Y, U, V, pivot='tail',angles='xy', scale_units='xy', scale=0.2)
 
-    ax.set_xlim(-1, 5)
+    ax.set_xlim(-1, 20)
     ax.set_ylim(-1, 1)
 
     def update_quiver(num, Q, X, Y):
@@ -99,9 +112,9 @@ def task_c():
         fixed increment on each frame
         """
 
-        U = data[num*10,1:6,1:2,0]
-        V = data[num*10,1:6,1:2,1]
-        C = data[num*10,1:6,1:2,2]
+        U = data[num*10,1:21,1:2,0]
+        V = data[num*10,1:21,1:2,1]
+        C = np.floor(data[num*10,1:21,1:2,2])
         Q.set_UVC(U,V,C)
 
         return Q,
@@ -109,10 +122,11 @@ def task_c():
     # you need to set blit=False, or the first set of arrows never gets
     # cleared on subsequent frames
     anim = animation.FuncAnimation(fig, update_quiver, fargs=(Q, X, Y),
-                                interval=40, blit=True)
+                                interval=600, blit=True)
     fig.tight_layout()
     plt.show()
 
-start = time.time()
-task_c()
-print(f"Task c took {time.time()-start:.2f} seconds.")
+if __name__ == "__main__":
+    start = time.time()
+    task_c()
+    print(f"Task c took {time.time()-start:.2f} seconds.")

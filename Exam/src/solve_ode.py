@@ -1,6 +1,6 @@
 import numpy as np
 from equations import LLG, normalize, F, random_matrix, make_thermal_constant
-from numba import njit, prange
+from numba import njit
 
 @njit()
 def evolve_spins(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z: float, e_z: np.ndarray, B: np.ndarray, J: float, alpha: float, k_b: float,T: float, gamma: float, shape: tuple =(1,1)) -> np.ndarray:
@@ -13,9 +13,8 @@ def evolve_spins(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z:
     2. Then it finds the new predicted effective field at every location and stores it in F_j_pred
     3. Lastly, it performs the final step in the Heun scheme using the initial and predicted spins and fields.
 
-    This is one step using the Heun scheme. It looks slow, but using numba and parallelisation with pranga
-    for steps that do not depend on others, it is quite fast, but sometimes it terminates quickly. If this
-    is a problem, use the "old_but_working" functions in the bottom of the file. 
+    This is one step using the Heun scheme. It looks slow, but using numba, it is quite fast, but sometimes it terminates quickly. If this
+    is a problem, use the "evolve_spins_old" function in the bottom of the file. 
 
     The data takes the shape: [0,0,0] [0,0,0] [0,0,0], which is what is meant by padding.
                               [0,0,0] [x,y,z] [0,0,0]
@@ -33,7 +32,7 @@ def evolve_spins(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z:
         k_b (float): The boltzmann constant
         T (float): The temperature
         gamma (float): The gyromagnetic ratio
-        shape (tuple, optional): The actual number of spins. Defaults to (1,1).
+        shape (tuple, optional): The actual shape of spins. Defaults to (1,1).
 
     Returns:
         np.ndarray: The time evolution of all spins and spin components.
@@ -104,10 +103,9 @@ def evolve_spins(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z:
                 F_j_predicted, gamma, alpha)))
     return data
 
-# UPDATE DOCSTRING!!!!!!!!!!!!!!!!!!!!!!
 @njit()
 def evolve_spins_pbc_linear(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z: float, e_z: np.ndarray, B: np.ndarray, J: float, alpha: float, k_b: float,T: float, gamma: float, shape: tuple =(1,1)) -> np.ndarray:
-    """Finds the time evolution of spins for a 1D lattice with non-periodic boundary conditions.
+    """Finds the time evolution of spins for a 1D lattice with periodic boundary conditions.
     For every time step, it initializes matrices to store the predicted S_j and the calculated F_j
     and the predicted F_j. 
     
@@ -116,27 +114,24 @@ def evolve_spins_pbc_linear(data: np.ndarray, N_steps: int, delta_t: float, mu: 
     2. Then it finds the new predicted effective field at every location and stores it in F_j_pred
     3. Lastly, it performs the final step in the Heun scheme using the initial and predicted spins and fields.
 
-    This is one step using the Heun scheme. It looks slow, but using numba and parallelisation with pranga
-    for steps that do not depend on others, it is quite fast, but sometimes it terminates quickly. If this
-    is a problem, use the "old_but_working" functions in the bottom of the file. 
+    This is one step using the Heun scheme. It looks slow, but using numba it is quite fast.
 
-    The data takes the shape: [0,0,0] [0,0,0] [0,0,0], which is what is meant by padding.
-                              [0,0,0] [x,y,z] [0,0,0]
-                              [0,0,0] [0,0,0] [0,0,0]   
+    NOTE: Since it is for linear chains, the double for-loop could be reduced to one.
+
     Args:
-        data (np.ndarray): An [N_steps, N_x+2, N_y+2, 3] array with the +2 being padding of 0s
+        data (np.ndarray): An [N_steps, N_x, N_y, 3] array.
         N_steps (int): The number of steps
         delta_t (float): The size of the timestep
         mu (float): The magnetic moment
         d_z (float): The anisotropy term
-        e_z (np.ndarray): The unit vector in the z-direction
+        e_z (np.ndarray): The unit vector in the z-direction [0,0,1]
         B (np.ndarray): The magnetic field vector [0,0,B_0]
         J (float): The coupling constant
         alpha (float): The damping constant
         k_b (float): The boltzmann constant
         T (float): The temperature
         gamma (float): The gyromagnetic ratio
-        shape (tuple, optional): The actual number of spins. Defaults to (1,1).
+        shape (tuple, optional): The shape of the spin lattice. Defaults to (1,1).
 
     Returns:
         np.ndarray: The time evolution of all spins and spin components.
@@ -147,6 +142,7 @@ def evolve_spins_pbc_linear(data: np.ndarray, N_steps: int, delta_t: float, mu: 
 
     # For each time step
     for i in range(N_steps-1):
+        # "Progress bar"
         if i %10000 == 0:
             print(i)
         # Allocate memory
@@ -211,10 +207,9 @@ def evolve_spins_pbc_linear(data: np.ndarray, N_steps: int, delta_t: float, mu: 
                 F_j_predicted, gamma, alpha)))
     return data    
 
-# UPDATE DOCSTRING!!!!!!!!!!!!!!!!!!!!!!
 @njit()
 def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: float, d_z: float, e_z: np.ndarray, B: np.ndarray, J: float, alpha: float, k_b: float,T: float, gamma: float, shape: tuple =(1,1)) -> np.ndarray:
-    """Finds the time evolution of spins for a 1D lattice with non-periodic boundary conditions.
+    """Finds the time evolution of spins for a 2D lattice with periodic boundary conditions.
     For every time step, it initializes matrices to store the predicted S_j and the calculated F_j
     and the predicted F_j. 
     
@@ -223,27 +218,22 @@ def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: 
     2. Then it finds the new predicted effective field at every location and stores it in F_j_pred
     3. Lastly, it performs the final step in the Heun scheme using the initial and predicted spins and fields.
 
-    This is one step using the Heun scheme. It looks slow, but using numba and parallelisation with pranga
-    for steps that do not depend on others, it is quite fast, but sometimes it terminates quickly. If this
-    is a problem, use the "old_but_working" functions in the bottom of the file. 
+    This is one step using the Heun scheme. It looks slow, but using numba it is quite fast.
 
-    The data takes the shape: [0,0,0] [0,0,0] [0,0,0], which is what is meant by padding.
-                              [0,0,0] [x,y,z] [0,0,0]
-                              [0,0,0] [0,0,0] [0,0,0]   
     Args:
-        data (np.ndarray): An [N_steps, N_x+2, N_y+2, 3] array with the +2 being padding of 0s
+        data (np.ndarray): An [N_steps, N_x, N_y, 3] array 
         N_steps (int): The number of steps
         delta_t (float): The size of the timestep
         mu (float): The magnetic moment
         d_z (float): The anisotropy term
-        e_z (np.ndarray): The unit vector in the z-direction
+        e_z (np.ndarray): The unit vector in the z-direction [0,0,1]
         B (np.ndarray): The magnetic field vector [0,0,B_0]
         J (float): The coupling constant
         alpha (float): The damping constant
         k_b (float): The boltzmann constant
         T (float): The temperature
         gamma (float): The gyromagnetic ratio
-        shape (tuple, optional): The actual number of spins. Defaults to (1,1).
+        shape (tuple, optional): The shape of the spin lattice. Defaults to (1,1).
 
     Returns:
         np.ndarray: The time evolution of all spins and spin components.
@@ -254,6 +244,7 @@ def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: 
 
     # For each time step
     for i in range(N_steps-1):
+        # "Progress bar"
         if i %10000 == 0:
             print(i)
         # Allocate memory
@@ -278,7 +269,7 @@ def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: 
                     neighbours[0] = data[i][0][col_val] # Right
                 else:
                     neighbours[0] = data[i][row_val+1][col_val] # Right
-                if col_val % (shape[0] - 1) == 0:
+                if col_val % (shape[1] - 1) == 0:
                     neighbours[1] = data[i][0][col_val] # Down
                 else:
                     neighbours[1] = data[i][row_val][col_val+1] # Down
@@ -307,8 +298,8 @@ def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: 
                     neighbours[0] = data[i][0][col_val] # Right
                 else:
                     neighbours[0] = data[i][row_val+1][col_val] # Right
-                if col_val % (shape[0] - 1) == 0:
-                    neighbours[1] = data[i][0][col_val] # Down
+                if col_val % (shape[1] - 1) == 0:
+                    neighbours[1] = data[i][row_val][0] # Down
                 else:
                     neighbours[1] = data[i][row_val][col_val+1] # Down
 
@@ -339,9 +330,9 @@ def evolve_spins_pbc_square(data: np.ndarray, N_steps: int, delta_t: float, mu: 
 
 
 
-#############################################################################
-######## OLD AND A LITTLE WRONG CODE, BUT YIELDS THE SAME RESULTS ###########
-#############################################################################
+###############################################################################################################
+# OLD AND A LITTLE WRONG CODE, BUT YIELDS THE SAME RESULTS, THE MAGNETIC WAVE ONLY PROPAGATES A LITTLE SLOWER #
+###############################################################################################################
 
 @njit()
 def heun(delta_t: float, S_j: np.ndarray, F_j: np.ndarray, gamma: float, alpha: float) -> np.ndarray:
@@ -388,81 +379,6 @@ def evolve_spins_old(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, 
                 neighbours[1] = data[i][row_val][col_val-1] # Up
                 neighbours[2] = data[i][row_val+1][col_val] # Right
                 neighbours[3] = data[i][row_val-1][col_val] # Left
-
-                # Find the effective field at current position
-                F_j = F(mu, S_j,d_z,e_z,B,J,neighbours,thermal_constant, rand_vec)
-
-                # Perform a step with Heun
-                data[i+1][row_val][col_val] = heun(delta_t, S_j, F_j, gamma, alpha)
-    return data
-
-@njit()
-def evolve_spins_pbc_linear_old(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
-    """
-    This one is for periodic boundary conditions. It does not update the F_j for the prediction.
-    """
-    thermal_constant = make_thermal_constant(alpha, k_b, T, gamma, mu, delta_t)
-    # For each time step
-    for i in range(N_steps-1):
-        rand_mat = random_matrix(shape)
-        # For every value in row
-        if i % 10000 == 0:
-            print(i)
-        for row_val in range(shape[0]):
-            # For every value in column
-            for col_val in range(shape[1]):
-                # Find current spin values
-                S_j = data[i][row_val][col_val]
-                rand_vec = rand_mat[row_val][col_val]
-
-                # Find the neighbour spin values, since the data is padded, it generalizes to 0D/1D
-                neighbours = np.zeros((2,3))
-                if row_val % (shape[0] - 1) == 0:
-                    neighbours[0] = data[i][0][col_val] # Right
-                else:
-                    neighbours[0] = data[i][row_val+1][col_val] # Right
-                neighbours[1] = data[i][row_val-1][col_val] # Left
-
-                # Find the effective field at current position
-                F_j = F(mu, S_j,d_z,e_z,B,J,neighbours,thermal_constant, rand_vec)
-
-                # Perform a step with Heun
-                data[i+1][row_val][col_val] = heun(delta_t, S_j, F_j, gamma, alpha)
-    return data
-
-@njit()
-def evolve_spins_pbc_square_old(data, N_steps, delta_t, mu, d_z, e_z, B, J, alpha, k_b, T, gamma, shape=(1,1)):
-    """
-    This one is for non-periodic boundary conditions. It does not update the F_j for the prediction.
-    """
-    thermal_constant = make_thermal_constant(alpha, k_b, T, mu, gamma, delta_t)
-    # For each time step
-    for i in range(N_steps-1):
-        rand_mat = random_matrix(shape)
-        if i%10000 == 0:
-            print(i)
-        # For every value in row
-        for row_val in range(shape[0]):
-            # For every value in column
-            for col_val in range(shape[1]):
-                # Find current spin values
-                S_j = data[i][row_val][col_val]
-                rand_vec = rand_mat[row_val][col_val]
-
-                # Find the neighbour spin values, since the data is padded, it generalizes to 0D/1D
-                neighbours = np.zeros((4,3))
-
-                if row_val % (shape[0] - 1) == 0:
-                    neighbours[0] = data[i][0][col_val] # Right
-                else:
-                    neighbours[0] = data[i][row_val+1][col_val] # Right
-                if col_val % (shape[0] - 1) == 0:
-                    neighbours[1] = data[i][0][col_val] # Down
-                else:
-                    neighbours[1] = data[i][row_val][col_val+1] # Down
-
-                neighbours[2] = data[i][row_val][col_val - 1] # Left
-                neighbours[3] = data[i][row_val-1][col_val] # Up
 
                 # Find the effective field at current position
                 F_j = F(mu, S_j,d_z,e_z,B,J,neighbours,thermal_constant, rand_vec)

@@ -1,16 +1,9 @@
 from plot_params import set_plot_parameters
 import matplotlib.pyplot as plt
-from solve_ode import evolve_spins_pbc_linear, evolve_spins_pbc_linear_old
+from solve_ode import evolve_spins_pbc_linear
 import numpy as np
-from equations import normalize, make_random_spins_linear
+from equations import make_random_spins_linear
 import time
-
-"""
-This works and will find the ground state for both ferromagnetic and antiferromagnetic
-Ferromagnetic will make boundaries that make collapse when there is no B-field.
-Ferromagnetic will orient upwards when there is B-field
-Antiferromagnetic will make spins opposing each other in Z. Just tune, J, B and d_z to see this.
-"""
 
 def task_f():
     gamma = 0.176 # 1/(T* ps)
@@ -47,8 +40,8 @@ def task_f():
     print(f"Task f) took {time.time()-start:.2f} seconds.")
     t = np.arange(data.shape[0])*delta_t
 
+    # Plotting
     set_plot_parameters()
-
     fig, axs = plt.subplots(1,3, sharey=True, figsize=(14,4))
     all_x = data[:,:,0,0]
     all_y = data[:,:,0,1]
@@ -101,4 +94,5 @@ def task_f():
     fig.tight_layout()
     plt.show()
 
-task_f()
+if __name__ == "__main__":
+    task_f()
